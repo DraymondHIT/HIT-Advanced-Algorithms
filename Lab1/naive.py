@@ -7,19 +7,11 @@ class Naive:
 
     @staticmethod
     def intersection(list1: list, list2: list) -> int:
-        i = j = 0
-        len1 = len(list1)
-        len2 = len(list2)
         sum = 0
-        while i < len1 and j < len2:
-            if list1[i] == list2[j]:
-               sum += 1
-               i += 1
-               j += 1
-            elif list1[i] < list2[j]:
-                i += 1
-            else:
-                j += 1
+        for element1 in list1:
+            for element2 in list2:
+                if element1 == element2:
+                    sum += 1
         return sum
 
     def run(self, corpus: dict, c: float):
