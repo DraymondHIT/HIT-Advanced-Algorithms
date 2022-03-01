@@ -1,6 +1,7 @@
 from data import DataGenerator
 from naive import Naive
 from linear import Linear
+from lazySelect import LazySelect
 import time
 
 N_SAMPLES = 10000
@@ -45,10 +46,22 @@ def linearMethod(corpus, k):
     print(f'Time: {time_end - time_start}s')
 
 
+def lazyMethod(corpus, k):
+    print('Lazy Method Running...')
+    time_start = time.time()
+    lazy = LazySelect(corpus, k)
+    result = lazy.run(["uniform", "normal", "zipf"])
+    time_end = time.time()
+    print('===========Lazy Method Result===========')
+    printDict(result)
+    print(f'Time: {time_end - time_start}s')
+
+
 def main():
     corpus = data(N_SAMPLES)
     naiveMethod(corpus, K)
     linearMethod(corpus, K)
+    lazyMethod(corpus, K)
 
 
 if __name__ == "__main__":
