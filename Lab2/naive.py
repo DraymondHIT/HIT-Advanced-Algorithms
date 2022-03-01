@@ -33,12 +33,9 @@ class Naive:
         list_right = self.merge_sort(mylist[mid:])
         return self.merge(list_left, list_right)
 
-    def run(self):
+    def run(self, name_list):
         result = {}
-        temp = self.merge_sort(self.corpus["uniform"])
-        result["uniform"] = temp[self.k-1]
-        temp = self.merge_sort(self.corpus["normal"])
-        result["normal"] = temp[self.k-1]
-        temp = self.merge_sort(self.corpus["zipf"])
-        result["zipf"] = temp[self.k-1]
+        for name in name_list:
+            temp = self.merge_sort(self.corpus[name])
+            result[name] = temp[self.k-1]
         return result

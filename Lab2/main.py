@@ -9,8 +9,7 @@ K = 5000
 
 def printDict(dic):
     for key in dic.keys():
-        print(f'{key}: {dic[key]}')
-
+        print(f"{key}: {dic[key]}")
 
 def data(n_samples):
     print('Data Loading...')
@@ -27,7 +26,7 @@ def naiveMethod(corpus, k):
     print('Naive Method Running...')
     time_start = time.time()
     naive = Naive(corpus, k)
-    result = naive.run()
+    result = naive.run(["uniform", "normal", "zipf"])
     time_end = time.time()
     print('===========Naive Method Result===========')
     printDict(result)
@@ -38,7 +37,7 @@ def linearMethod(corpus, k):
     print('Linear Method Running...')
     time_start = time.time()
     linear = Linear(corpus, k)
-    result = linear.run()
+    result = linear.run(["uniform", "normal", "zipf"])
     time_end = time.time()
     print('===========Linear Method Result===========')
     printDict(result)

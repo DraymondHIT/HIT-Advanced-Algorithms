@@ -60,14 +60,11 @@ class Linear:
         else:
             return self.select(a, i + 1, r, k - m)
 
-    def run(self):
+    def run(self, name_list):
         result = {}
-        temp = self.corpus["uniform"]
-        result["uniform"] = self.select(temp, 0, len(temp), self.k)
-        temp = self.corpus["normal"]
-        result["normal"] = self.select(temp, 0, len(temp), self.k)
-        temp = self.corpus["zipf"]
-        result["zipf"] = self.select(temp, 0, len(temp), self.k)
+        for name in name_list:
+            temp = self.corpus[name][:]
+            result[name] = self.select(temp, 0, len(temp), self.k)
         return result
 
         # 测试样例
