@@ -10,7 +10,7 @@ FILE_PATH = './data/E1_AOL-out.txt'
 
 
 def data(file_path):
-    print('Data Loading:')
+    print('Data Loading...')
     time_start = time.time()
     corpus = DataLoader(file_path).load()
     time_end = time.time()
