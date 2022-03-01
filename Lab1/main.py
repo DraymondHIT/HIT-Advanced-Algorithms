@@ -4,8 +4,8 @@ from minHash import MinHash
 import random
 import time
 
-n_samples = 200
-c = 0.3
+n_samples = 100
+c = 0.1
 FILE_PATH = './data/E1_AOL-out.txt'
 
 
@@ -21,7 +21,7 @@ def data(file_path):
 
 
 def sample(corpus, n_samples):
-    print('Random Sampling:')
+    print('Random Sampling...')
     time_start = time.time()
     samples = random.sample(corpus.items(), n_samples)
     samples = {sample[0]: sample[1] for sample in samples}
@@ -33,7 +33,7 @@ def sample(corpus, n_samples):
 
 
 def naiveMethod(samples, c):
-    print('Naive Method Running:')
+    print('Naive Method Running...')
     time_start = time.time()
     naive = Naive()
     naive_result = naive.run(samples, c)
@@ -64,7 +64,7 @@ def preProcess(corpus):
 
 
 def minHashMethod(samples, keys, n_hash_funcs, c):
-    print('MinHash Method Running:')
+    print('MinHash Method Running...')
     time_start = time.time()
     minHash = MinHash()
     minHash_result = minHash.run(samples, keys, n_hash_funcs, c)
@@ -78,7 +78,7 @@ def main():
     samples = sample(corpus, n_samples)
     naiveMethod(samples, c)
     processed, keys = preProcess(samples)
-    minHashMethod(processed, keys, 200, c)
+    minHashMethod(processed, keys, 100, c)
 
 
 if __name__ == '__main__':
