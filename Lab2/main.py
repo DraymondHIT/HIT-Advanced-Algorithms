@@ -11,6 +11,7 @@ def printDict(dic):
     for key in dic.keys():
         print(f"{key}: {dic[key]}")
 
+
 def data(n_samples):
     print('Data Loading...')
     time_start = time.time()
