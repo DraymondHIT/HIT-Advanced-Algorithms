@@ -3,10 +3,13 @@ from naive import Naive
 from minHash import MinHash
 import random
 import time
+import numpy as np
 
 n_samples = 100
-c = 0.1
-FILE_PATH = './data/E1_AOL-out.txt'
+b = 30
+r = 3
+c = 0.3
+FILE_PATH = './data/E1_kosarak_100k.txt'
 
 
 def data(file_path):
@@ -57,28 +60,34 @@ def preProcess(corpus):
                 data[i][j] = 1
             else:
                 data[i][j] = 0
+    data = np.array(data)
     time_end = time.time()
     print('Done!')
     print(f'Time: {time_end - time_start}s')
-    return data, keys
+    return data
 
 
-def minHashMethod(samples, keys, n_hash_funcs, c):
+def minHashMethod(samples, b, r):
     print('MinHash Method Running...')
     time_start = time.time()
-    minHash = MinHash()
-    minHash_result = minHash.run(samples, keys, n_hash_funcs, c)
+    minHash = MinHash(b, r)
+    minHash_result = minHash.run(samples)
     time_end = time.time()
-    print(f'MinHash Method Result: {len(minHash_result)}')
+    print(f'MinHash Method Result: {minHash_result}')
     print(f'Time: {time_end - time_start}s')
 
 
 def main():
     corpus = data(FILE_PATH)
     samples = sample(corpus, n_samples)
+    # samples = {1: [2, 3, 4, 6],
+    #            2: [1, 2, 3, 8],
+    #            3: [3, 4, 5, 7],
+    #            4: [2, 5, 8],
+    #            5: [1, 4, 6]}
     naiveMethod(samples, c)
-    processed, keys = preProcess(samples)
-    minHashMethod(processed, keys, 100, c)
+    processed = preProcess(samples)
+    minHashMethod(processed, b, r)
 
 
 if __name__ == '__main__':
