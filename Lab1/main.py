@@ -6,10 +6,13 @@ import time
 import numpy as np
 
 n_samples = 100
-b = 30
-r = 3
-c = 0.3
-FILE_PATH = './data/E1_kosarak_100k.txt'
+b = 5
+r = 2
+# b_list = range(5, 55, 5)
+# r_list = range(1, 5)
+best = {"b": None, "r": None, "result": None, "value": 100000}
+c = 0.2
+FILE_PATH = './data/E1_Booking-out.txt'
 
 
 def data(file_path):
@@ -43,6 +46,7 @@ def naiveMethod(samples, c):
     time_end = time.time()
     print(f'Naive Method Result: {len(naive_result)}')
     print(f'Time: {time_end - time_start}s')
+    return len(naive_result)
 
 
 def preProcess(corpus):
@@ -67,12 +71,18 @@ def preProcess(corpus):
     return data
 
 
-def minHashMethod(samples, b, r):
+def minHashMethod(samples, b, r, naive_result):
     print('MinHash Method Running...')
     time_start = time.time()
     minHash = MinHash(b, r)
     minHash_result = minHash.run(samples)
     time_end = time.time()
+    if abs(minHash_result - naive_result) < best["value"]:
+        best["value"] = abs(minHash_result - naive_result)
+        best["result"] = minHash_result
+        best["b"] = b
+        best["r"] = r
+    print(f'b = {b} r = {r}')
     print(f'MinHash Method Result: {minHash_result}')
     print(f'Time: {time_end - time_start}s')
 
@@ -85,9 +95,14 @@ def main():
     #            3: [3, 4, 5, 7],
     #            4: [2, 5, 8],
     #            5: [1, 4, 6]}
-    naiveMethod(samples, c)
+    naive_result = naiveMethod(samples, c)
     processed = preProcess(samples)
-    minHashMethod(processed, b, r)
+    # for b in b_list:
+    #     for r in r_list:
+    #         minHashMethod(processed, b, r, naive_result)
+
+    minHashMethod(processed, b, r, naive_result)
+    # print(best)
 
 
 if __name__ == '__main__':

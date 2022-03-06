@@ -48,11 +48,11 @@ class MinHash:
         hashBuckets = {}
         n = self.b * self.r
 
-        time_start = time.time()
+        # time_start = time.time()
         sigMatrix = self.sigMatrix(matrix, n)
         # print(sigMatrix)
-        time_end = time.time()
-        print(time_end - time_start)
+        # time_end = time.time()
+        # print(time_end - time_start)
 
         begin, end = 0, self.r
         count = 0
@@ -79,18 +79,18 @@ class MinHash:
         return hashBuckets
 
     def run(self, data):
-        time_start = time.time()
+        # time_start = time.time()
         hashBucket = self.minHash(data)
-        time_end = time.time()
-        print(time_end-time_start)
+        # time_end = time.time()
+        # print(time_end-time_start)
 
         query = [_ for _ in range(data.shape[1])]
         result = set()
 
-        time_start = time.time()
+        # time_start = time.time()
         for key in hashBucket:
             result = result.union(set([(min(col1, col2), max(col1, col2)) for col1 in hashBucket[key] for col2 in hashBucket[key]]))
-        time_end = time.time()
-        print(time_end - time_start)
+        # time_end = time.time()
+        # print(time_end - time_start)
 
         return len(result) - len(query)
