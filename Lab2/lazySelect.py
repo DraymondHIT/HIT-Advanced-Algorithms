@@ -26,8 +26,11 @@ class LazySelect:
         for name in name_list:
             temp = self.corpus[name][:]
             n = len(temp)
+            epoch = 0
 
             while True:
+                epoch += 1
+
                 ## 从原数据集中抽取n^0.75个元素
                 samples = self.randomSelect(temp)
 
@@ -37,9 +40,9 @@ class LazySelect:
 
                 x = int(self.k * pow(n, -0.25))
                 l = max(0, int(x - math.sqrt(n)))
-                r = min(pow(n, 0.75), int(x + math.sqrt(n)))
+                r = min(int(pow(n, 0.75)), int(x + math.sqrt(n)))
 
-                L = samples[l - 1]
+                L = samples[max(1, l - 1)]
                 H = samples[r - 1]
                 LP = self.rank(list=temp, element=L)
                 HP = self.rank(list=temp, element=H)
@@ -51,7 +54,8 @@ class LazySelect:
 
                 if LP <= self.k <= HP and len(p) <= 4 * pow(n, 0.75) + 1:
                     p = merge.run(p)
-                    result[name] = p[self.k-LP-1]
+                    result[name] = p[self.k-LP]
+                    result[name+"_epochs"] = epoch
                     break
 
         return result

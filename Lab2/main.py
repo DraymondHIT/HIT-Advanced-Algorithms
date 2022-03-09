@@ -2,10 +2,11 @@ from data import DataGenerator
 from naive import Naive
 from linear import Linear
 from lazySelect import LazySelect
+import numpy as np
 import time
 
-N_SAMPLES = 10000
-K = 5000
+N_SAMPLES = 1000
+K = 500
 
 
 def printDict(dic):
@@ -25,7 +26,6 @@ def data(n_samples):
 
 
 def naiveMethod(corpus, k):
-    print('Naive Method Running...')
     time_start = time.time()
     naive = Naive(corpus, k)
     result = naive.run(["uniform", "normal", "zipf"])
@@ -33,10 +33,10 @@ def naiveMethod(corpus, k):
     print('===========Naive Method Result===========')
     printDict(result)
     print(f'Time: {time_end - time_start}s')
+    return result, time_end - time_start
 
 
 def linearMethod(corpus, k):
-    print('Linear Method Running...')
     time_start = time.time()
     linear = Linear(corpus, k)
     result = linear.run(["uniform", "normal", "zipf"])
@@ -44,10 +44,10 @@ def linearMethod(corpus, k):
     print('===========Linear Method Result===========')
     printDict(result)
     print(f'Time: {time_end - time_start}s')
+    return time_end - time_start
 
 
 def lazyMethod(corpus, k):
-    print('Lazy Method Running...')
     time_start = time.time()
     lazy = LazySelect(corpus, k)
     result = lazy.run(["uniform", "normal", "zipf"])
@@ -55,13 +55,30 @@ def lazyMethod(corpus, k):
     print('===========Lazy Method Result===========')
     printDict(result)
     print(f'Time: {time_end - time_start}s')
+    return result, time_end - time_start
 
 
 def main():
     corpus = data(N_SAMPLES)
-    naiveMethod(corpus, K)
-    linearMethod(corpus, K)
-    lazyMethod(corpus, K)
+    naiveTime = []
+    linearTime = []
+    lazyTime = []
+    error = 0
+    for _ in range(10):
+        print(f'=============Epoch {_+1}=============')
+        correct, time = naiveMethod(corpus, K)
+        naiveTime.append(time)
+        linearTime.append(linearMethod(corpus, K))
+        result, time = lazyMethod(corpus, K)
+        lazyTime.append(time)
+        error += int(correct["uniform"] != result["uniform"]) \
+                 + int(correct["normal"] != result["normal"]) \
+                 + int(correct["zipf"] != result["zipf"])
+    print('=============Conclusion=============')
+    print(f"Naive: {np.mean(naiveTime)}")
+    print(f"Linear: {np.mean(linearTime)}")
+    print(f"Lazy: {np.mean(lazyTime)}")
+    print(f"Accuracy: {1. - error/30.}")
 
 
 if __name__ == "__main__":
