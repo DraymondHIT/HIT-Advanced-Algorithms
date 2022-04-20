@@ -10,8 +10,8 @@ class DataLoader:
                 self.dict[int(line[0])] = {int(line[1])}
             else:
                 self.dict[int(line[0])].add(int(line[1]))
-        for key in self.dict.keys():
-            self.dict[key] = sorted(list(self.dict[key]))
+        # for key in self.dict.keys():
+        #     self.dict[key] = sorted(list(self.dict[key]))
 
     def load(self):
         return self.dict

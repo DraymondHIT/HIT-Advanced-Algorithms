@@ -9,39 +9,52 @@ class MinHash:
         self.b = b
         self.r = r
 
-    @staticmethod
-    def singleHash(matrix):
-        """
-        生成单一的Hash函数
-        """
-        seqSet = [i for i in range(matrix.shape[0])]
-        result = [-1 for _ in range(matrix.shape[1])]
-        count = 0
-        while len(seqSet) > 0:
-            randomSeq = random.choice(seqSet)
-            for i in range(matrix.shape[1]):
-                if matrix[randomSeq][i] != 0:
-                    if result[i] == -1:
-                        result[i] = randomSeq
-                        count += 1
-                    elif randomSeq < result[i]:
-                        result[i] = randomSeq
-            if count == matrix.shape[1]:
-                break
-            seqSet.remove(randomSeq)
+    # @staticmethod
+    # def singleHash(matrix):
+    #     """
+    #     生成单一的Hash函数
+    #     """
+    #     seqSet = [i for i in range(matrix.shape[0])]
+    #     result = [-1 for _ in range(matrix.shape[1])]
+    #     count = 0
+    #     while len(seqSet) > 0:
+    #         randomSeq = random.choice(seqSet)
+    #         for i in range(matrix.shape[1]):
+    #             if matrix[randomSeq][i] != 0:
+    #                 if result[i] == -1:
+    #                     result[i] = randomSeq
+    #                     count += 1
+    #                 elif randomSeq < result[i]:
+    #                     result[i] = randomSeq
+    #         if count == matrix.shape[1]:
+    #             break
+    #         seqSet.remove(randomSeq)
+    #     return result
+
+    def singleHash(self, data, n):
+        seq = [i for i in range(n)]
+        result = [n for _ in range(len(data))]
+        seq = np.random.permutation(seq)
+        for i in range(len(result)):
+            minhash = n
+            for element in data[i]:
+                if seq[element] < minhash:
+                    result[i] = element
+                    minhash = seq[element]
         return result
 
-    def sigMatrix(self, matrix, n_hash_funcs):
+
+    def sigMatrix(self, data, n_elements, n_hash_funcs):
         """
         计算sigMatrix
         """
         result = []
         for i in range(n_hash_funcs):
-            single = self.singleHash(matrix)
+            single = self.singleHash(data, n_elements)
             result.append(single)
         return np.array(result)
 
-    def minHash(self, matrix):
+    def minHash(self, data, n_elements):
         """
         LSH算法
         """
@@ -49,7 +62,7 @@ class MinHash:
         n = self.b * self.r
 
         # time_start = time.time()
-        sigMatrix = self.sigMatrix(matrix, n)
+        sigMatrix = self.sigMatrix(data, n_elements, n)
         # print(sigMatrix)
         # time_end = time.time()
         # print(time_end - time_start)
@@ -78,13 +91,13 @@ class MinHash:
 
         return hashBuckets
 
-    def run(self, data):
+    def run(self, data, n):
         # time_start = time.time()
-        hashBucket = self.minHash(data)
+        hashBucket = self.minHash(data, n)
         # time_end = time.time()
         # print(time_end-time_start)
 
-        query = [_ for _ in range(data.shape[1])]
+        query = [_ for _ in range(len(data))]
         result = set()
 
         # time_start = time.time()

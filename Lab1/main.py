@@ -5,14 +5,14 @@ import random
 import time
 import numpy as np
 
-n_samples = 100
+n_samples = 500
 b = 5
-r = 2
-# b_list = range(5, 55, 5)
-# r_list = range(1, 5)
+r = 4
+# b_list = range(5, 35, 5)
+# r_list = range(5, 10)
 best = {"b": None, "r": None, "result": None, "value": 100000}
-c = 0.2
-FILE_PATH = './data/E1_Booking-out.txt'
+c = 0.5
+FILE_PATH = './data/E1_kosarak_100k.txt'
 
 
 def data(file_path):
@@ -55,27 +55,26 @@ def preProcess(corpus):
     keys = sorted(list(corpus.keys()))
     values = set()
     for value in corpus.values():
-        values = values.union(set(value))
+        values = values.union(value)
     values = sorted(list(values))
-    data = [[None] * len(keys) for _ in range(len(values))]
-    for i in range(len(values)):
-        for j in range(len(keys)):
-            if values[i] in corpus[keys[j]]:
-                data[i][j] = 1
-            else:
-                data[i][j] = 0
-    data = np.array(data)
+    value2index = dict()
+    for i, element in enumerate(values):
+        value2index[element] = i
+    data = [[] for _ in range(len(keys))]
+    for i in range(len(keys)):
+        for element in corpus[keys[i]]:
+            data[i].append(value2index[element])
     time_end = time.time()
     print('Done!')
     print(f'Time: {time_end - time_start}s')
-    return data
+    return data, len(values)
 
 
-def minHashMethod(samples, b, r, naive_result):
+def minHashMethod(samples, n, b, r, naive_result):
     print('MinHash Method Running...')
     time_start = time.time()
     minHash = MinHash(b, r)
-    minHash_result = minHash.run(samples)
+    minHash_result = minHash.run(samples, n)
     time_end = time.time()
     if abs(minHash_result - naive_result) < best["value"]:
         best["value"] = abs(minHash_result - naive_result)
@@ -90,20 +89,19 @@ def minHashMethod(samples, b, r, naive_result):
 def main():
     corpus = data(FILE_PATH)
     samples = sample(corpus, n_samples)
-    # samples = {1: [2, 3, 4, 6],
-    #            2: [1, 2, 3, 8],
-    #            3: [3, 4, 5, 7],
-    #            4: [2, 5, 8],
-    #            5: [1, 4, 6]}
+
     naive_result = naiveMethod(samples, c)
-    processed = preProcess(samples)
+    # naive_result = []
+    processed, n_elements = preProcess(samples)
     # for b in b_list:
     #     for r in r_list:
-    #         minHashMethod(processed, b, r, naive_result)
+    #         minHashMethod(processed, n_elements, b, r, naive_result)
 
-    minHashMethod(processed, b, r, naive_result)
+    minHashMethod(processed, n_elements, b, r, naive_result)
     # print(best)
 
 
 if __name__ == '__main__':
     main()
+
+
