@@ -1,7 +1,5 @@
-import random
 import numpy as np
 import hashlib
-import time
 
 
 class MinHash:
@@ -9,29 +7,8 @@ class MinHash:
         self.b = b
         self.r = r
 
-    # @staticmethod
-    # def singleHash(matrix):
-    #     """
-    #     生成单一的Hash函数
-    #     """
-    #     seqSet = [i for i in range(matrix.shape[0])]
-    #     result = [-1 for _ in range(matrix.shape[1])]
-    #     count = 0
-    #     while len(seqSet) > 0:
-    #         randomSeq = random.choice(seqSet)
-    #         for i in range(matrix.shape[1]):
-    #             if matrix[randomSeq][i] != 0:
-    #                 if result[i] == -1:
-    #                     result[i] = randomSeq
-    #                     count += 1
-    #                 elif randomSeq < result[i]:
-    #                     result[i] = randomSeq
-    #         if count == matrix.shape[1]:
-    #             break
-    #         seqSet.remove(randomSeq)
-    #     return result
-
-    def singleHash(self, data, n):
+    @staticmethod
+    def singleHash(data, n):
         seq = [i for i in range(n)]
         result = [n for _ in range(len(data))]
         seq = np.random.permutation(seq)
@@ -42,7 +19,6 @@ class MinHash:
                     result[i] = element
                     minhash = seq[element]
         return result
-
 
     def sigMatrix(self, data, n_elements, n_hash_funcs):
         """
@@ -61,11 +37,7 @@ class MinHash:
         hashBuckets = {}
         n = self.b * self.r
 
-        # time_start = time.time()
         sigMatrix = self.sigMatrix(data, n_elements, n)
-        # print(sigMatrix)
-        # time_end = time.time()
-        # print(time_end - time_start)
 
         begin, end = 0, self.r
         count = 0
@@ -92,18 +64,18 @@ class MinHash:
         return hashBuckets
 
     def run(self, data, n):
-        # time_start = time.time()
         hashBucket = self.minHash(data, n)
-        # time_end = time.time()
-        # print(time_end-time_start)
 
-        query = [_ for _ in range(len(data))]
-        result = set()
+        result = [set() for _ in range(len(data))]
 
-        # time_start = time.time()
         for key in hashBucket:
-            result = result.union(set([(min(col1, col2), max(col1, col2)) for col1 in hashBucket[key] for col2 in hashBucket[key]]))
-        # time_end = time.time()
-        # print(time_end - time_start)
+            for col1 in hashBucket[key]:
+                for col2 in hashBucket[key]:
+                    if col1 == col2:
+                        break
+                    result[col1].add(col2)
 
-        return len(result) - len(query)
+        sum = 0
+        for s in result:
+            sum += len(s)
+        return sum
