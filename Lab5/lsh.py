@@ -5,12 +5,10 @@ import distance
 
 
 class LSHBuilder:
-
-    methods = ["opt",
-        "uniform",
-        "weighted_uniform",
-        "approx_degree",
-        "rank"]
+    methods = ["uniform",
+               "weighted_uniform",
+               "approx_degree",
+               "exact_degree"]
 
     @staticmethod
     def build(d, r, k, L, w, validate=False):
@@ -19,16 +17,15 @@ class LSHBuilder:
     @staticmethod
     def invoke(lsh, method, queries, runs):
         assert method in LSHBuilder.methods
-        if method == "opt":
-            res = lsh.opt(queries, runs)
         if method == "uniform":
             res = lsh.uniform_query(queries, runs)
-        if method == "weighted_uniform":
+        elif method == "weighted_uniform":
             res = lsh.weighted_uniform_query(queries, runs)
-        if method == "approx_degree":
+        elif method == "approx_degree":
             res = lsh.approx_degree_query(queries, runs)
-        if method == "rank":
-            res = lsh.rank_query_simulate(queries, runs)
+        else:
+            res = lsh.exact_degree_query(queries, runs)
+
         return res
 
 
@@ -64,13 +61,13 @@ class LSH:
                 elements |= self.tables[table].get(bucket, set())
                 prefix_sums[j][i] = s
             elements = set(x for x in elements
-                if self.is_candidate_valid(Y[j], self.X[x]))
+                           if self.is_candidate_valid(Y[j], self.X[x]))
             bucket_sizes[j] = s
             query_size[j] = len(elements)
             query_results[j] = elements
 
         return (query_buckets, query_size, query_results,
-            bucket_sizes, prefix_sums)
+                bucket_sizes, prefix_sums)
 
     def get_query_size(self, Y):
         _, query_size, _, _, _ = self.preprocess_query(Y)
@@ -113,29 +110,12 @@ class LSH:
                         break
         return results
 
-    def opt(self, Y, runs=100, runs_per_collision=True):
-        _, query_size, query_results, _, _ = self.preprocess_query(Y)
-        results = {i: [] for i in range(len(Y))}
-
-        for j in range(len(Y)):
-            elements = list(query_results[j])
-            iterations = query_size[j] * runs
-            if not runs_per_collision:
-                iterations = runs
-            for _ in range(iterations):
-                if query_size[j] == 0:
-                    results[j].append(-1)
-                    continue
-                results[j].append(random.choice(elements))
-        return results
-
     def approx_degree_query(self, Y, runs=100):
         from bisect import bisect_right
         query_buckets, query_size, _, bucket_sizes, prefix_sums = self.preprocess_query(Y)
         results = {i: [] for i in range(len(Y))}
 
         for j in range(len(Y)):
-            cache = {}
 
             for _ in range(query_size[j] * runs):
                 if bucket_sizes[j] == 0:
@@ -149,54 +129,35 @@ class LSH:
                     # discard not within distance threshold
                     if not self.is_candidate_valid(Y[j], self.X[p]):
                         continue
-                    #if p not in cache:
-                    #    cache[p] = int(np.median([self.approx_degree(query_buckets[j], p) for _ in range(30)]))
-                    D = self.approx_degree(query_buckets[j], p) #cache[p]
-                    if random.randint(1, D) == D: # output with probability 1/D
+                    D = self.approx_degree(query_buckets[j], p)
+                    if random.randint(1, D) == D:  # output with probability 1/D
                         results[j].append(p)
                         break
         return results
 
-    def rank_query_simulate(self, Y, runs=100):
-        import heapq
-        n = len(self.X)
-        m = len(Y)
-        # ranks[i] is point with rank i
-        # point_rank[j] is the rank of point j
-        ranks = list(range(n))
-        point_rank = [0 for _ in range(n)]
-        random.shuffle(ranks)
+    def exact_degree_query(self, Y, runs=100):
+        from bisect import bisect_right
+        query_buckets, query_size, _, bucket_sizes, prefix_sums = self.preprocess_query(Y)
+        results = {i: [] for i in range(len(Y))}
 
-        for rank, point in enumerate(ranks):
-            point_rank[point] = rank
+        for j in range(len(Y)):
 
-        results = {i: [] for i in range(m)}
-
-        query_buckets, query_size, query_results, _, _ = self.preprocess_query(Y)
-
-        for j in range(m):
-            elements = list((point_rank[point], point) for point in query_results[j])
-            heapq.heapify(elements)
             for _ in range(query_size[j] * runs):
+                if bucket_sizes[j] == 0:
+                    results[j].append(-1)
+                    continue
                 while True:
-                    rank, point = heapq.heappop(elements)
-                    while rank != point_rank[point]:
-                        rank, point = heapq.heappop(elements)
-                    if self.is_candidate_valid(Y[j], self.X[point]):
-                       break
-
-                results[j].append(point)
-
-                new_rank = random.randrange(rank, n)
-                q = ranks[new_rank]
-                ranks[rank] = q
-                ranks[new_rank] = point
-                point_rank[q] = rank
-                point_rank[point] = new_rank
-
-                heapq.heappush(elements, (new_rank, point))
-                if q in query_results[j]:
-                    heapq.heappush(elements, (rank, q))
+                    i = random.randrange(bucket_sizes[j])
+                    pos = bisect_right(prefix_sums[j], i)
+                    table, bucket = query_buckets[j][pos]
+                    p = random.choice(list(self.tables[table][bucket]))
+                    # discard not within distance threshold
+                    if not self.is_candidate_valid(Y[j], self.X[p]):
+                        continue
+                    D = self.exact_degree(query_buckets[j], p)
+                    if random.randint(1, D) == D:  # output with probability 1/D
+                        results[j].append(p)
+                        break
         return results
 
     def approx_degree(self, buckets, q):
@@ -272,4 +233,3 @@ def test_euclidean():
 
 if __name__ == "__main__":
     test_euclidean()
-

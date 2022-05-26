@@ -1,5 +1,13 @@
 import os
 import pickle5 as pickle
+from urllib.request import urlretrieve
+
+
+def download(src, dst):
+    if not os.path.exists(dst):
+        # TODO: should be atomic
+        print('downloading %s -> %s...' % (src, dst))
+        urlretrieve(src, dst)
 
 
 def get_dataset_fn(dataset):
