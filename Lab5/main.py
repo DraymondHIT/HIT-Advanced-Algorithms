@@ -1,9 +1,7 @@
 import os
-import argparse
-import pickle
 import time
 from datasets import get_dataset
-from lsh import LSHBuilder, E2LSH
+from lsh import LSH
 
 
 def get_result_fn(dataset, query_type, rep):
@@ -12,26 +10,26 @@ def get_result_fn(dataset, query_type, rep):
     return os.path.join(os.path.join("results", dataset, query_type, rep + ".pickle"))
 
 
-def run_single_exp(dataset, distance_threshold, k, L, w, validate, runs):
+def run_single_exp(dataset, distance_threshold, k, L, w, runs):
     data, queries, _, _ = get_dataset(dataset)
     print(f"data: {len(data)}")
     print(f"queries: {len(queries)}")
 
-    lsh = LSHBuilder.build(len(data[0]), distance_threshold, k, L, w, validate)
+    lsh = LSH(k, L, w, len(data[0]), distance_threshold)
 
     print("Building index...")
     lsh.preprocess(data)
 
     candidates = lsh.get_query_size(queries)
 
-    for method in LSHBuilder.methods:
+    for method in lsh.get_methods():
         print(f"Running (k={k}, L={L}) with {method}")
         start = time.time()
-        res = LSHBuilder.invoke(lsh, method, queries, runs)
+        res = lsh.invoke(method, queries, runs, cached=True)
         end = time.time()
         print(f"Run finished in {end - start}s.")
 
-        res_fn = get_result_fn(dataset, method, repr(lsh))
+        # res_fn = get_result_fn(dataset, method, repr(lsh))
 
         res_dict = {
             "name": str(lsh),
@@ -43,46 +41,19 @@ def run_single_exp(dataset, distance_threshold, k, L, w, validate, runs):
             "time": end - start
         }
 
-        with open(res_fn, 'wb') as f:
-            pickle.dump(res_dict, f, pickle.HIGHEST_PROTOCOL)
+        print(res_dict)
+
+        # with open(res_fn, 'wb') as f:
+        #     pickle.dump(res_dict, f, pickle.HIGHEST_PROTOCOL)
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        '--dataset',
-        default="glove-100-angular",
-    )
-    parser.add_argument(
-        '-k',
-        default=15,
-        type=int,
-    )
-    parser.add_argument(
-        '-L',
-        default=300,
-        type=int
-    )
-    parser.add_argument(
-        '-w',
-        default=15.7,
-        type=float
-    )
-    parser.add_argument(
-        '--distance-threshold',
-        default=4.7,
-        type=float,
-    )
-    parser.add_argument(
-        '--runs',
-        type=int,
-        default=100,
-    )
-    parser.add_argument(
-        '--validate',
-        action='store_true',
-    )
+    dataset = "glove-100-angular"
+    K = 15
+    L = 100
+    W = 15.7
+    R = 4.7
+    runs = 1
 
-    args = parser.parse_args()
-    run_single_exp(args.dataset, args.distance_threshold, args.k, args.L, args.w, args.validate, args.runs)
+    run_single_exp(dataset, R, K, L, W, runs)
 

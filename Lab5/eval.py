@@ -51,6 +51,18 @@ def get_variation_dist(data, path):
     return tvd_result
 
 
+def get_time(data, path):
+    time_result = []
+    for method in LSHBuilder.methods:
+        if os.path.exists(os.path.join("results", data, method, path + ".pickle")):
+            with open(os.path.join("results", data, method, path + ".pickle"), 'rb') as f:
+                res_dict = pickle.load(f)
+                time_result.append(res_dict["time"]/5000)
+        else:
+            print("Results Not Exist!!!")
+    return time_result
+
+
 def eval_K(data, k_list, l, w):
     uniform = []
     weighted_uniform = []
@@ -97,6 +109,24 @@ def eval_L(data, k, l_list, w):
     plt.show()
 
 
+def time_K(data, k_list, l, w):
+    uniform = []
+    weighted_uniform = []
+    approx_degree = []
+    exact_degree = []
+    for k in k_list:
+        filename = f'k_{k}_L_{l}_w_{w}'
+        result = get_time(data, filename)
+        uniform.append(result[0])
+        weighted_uniform.append(result[1])
+        approx_degree.append(result[2])
+        exact_degree.append(result[3])
+    print(uniform)
+    print(weighted_uniform)
+    print(approx_degree)
+    print(exact_degree)
+
+
 if __name__ == "__main__":
     dataset = "glove-100-angular"
     K_list = [11, 12, 13, 14, 15]
@@ -105,5 +135,7 @@ if __name__ == "__main__":
     L = 100
     W = 15.7
 
-    # eval_K(dataset, K_list, L, W)
+    eval_K(dataset, K_list, L, W)
     eval_L(dataset, K, L_list, W)
+
+    time_K(dataset, K_list, L, W)
